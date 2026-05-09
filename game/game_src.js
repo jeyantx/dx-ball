@@ -81,7 +81,7 @@ function dx_ball(soundon, saveron){
 	lFile = 0;
 	window.canvas = document.getElementById('dx-ball');
 	window.canvas.width = 2000;window.canvas.height = 2000;
-	window.ctx = canvas.getContext("2d");
+	window.ctx = canvas.getContext("2d", {willReadFrequently: true});
 
 	function loadfile(){
 		var xhr = new XMLHttpRequest();
@@ -187,9 +187,31 @@ game = function(){
 
 	user = new Object();
 	user.name   = '';
+	user.level  = 1;
 	user.startTime = 0;
 	user.timerStarted = false;
+	user.levelStartTime = 0;
 	paused = paus = false;
+
+	// Diagnostic logger. Prints the values that matter for ramp debugging.
+	// b is optional (defaults to balls[0] if available).
+	function logSpeed(event, b){
+		if(typeof console=='undefined') return;
+		var now = (new Date()).getTime();
+		var gt = user.timerStarted ? (now - user.startTime)/1000 : 0;
+		var lt = user.levelStartTime ? (now - user.levelStartTime)/1000 : 0;
+		if(!b && typeof balls!='undefined' && balls.length) b = balls[0];
+		var fmt = function(n){return (typeof n=='number') ? n.toFixed(3) : 'n/a';};
+		console.log('[dx-ball '+event+']',
+			'L'+user.level,
+			'gt='+gt.toFixed(1)+'s',
+			'lt='+lt.toFixed(1)+'s',
+			'ramp='+rampMul().toFixed(2),
+			'speedMul='+(b?b.speedMul.toFixed(2):'n/a'),
+			'ySpeed='+(b?fmt(b.ySpeed):'n/a'),
+			'xSpeed='+(b?fmt(b.xSpeed):'n/a'),
+			'magnet='+(b?b.magnet:'n/a'));
+	}
 
 	// Time-based difficulty ramp on ball speed, multiplied with speedMul at
 	// each paddle bounce. user.startTime is set in startGame() and adjusted
@@ -197,9 +219,9 @@ game = function(){
 	function rampMul(){
 		if(!user.timerStarted) return 1;
 		var s = ((new Date()).getTime() - user.startTime) / 1000;
-		if(s < 10) return 0.7;
-		if(s < 20) return 0.9;
-		if(s < 40) return 1.2;
+		if(s < 10) return 1.1;
+		if(s < 20) return 1.2;
+		if(s < 40) return 1.4;
 		if(s < 70) return 1.5;
 		if(s < 120) return 1.7;
 		return 1.9;
@@ -208,7 +230,10 @@ game = function(){
 	if(window.soundon){
 		audioFile['Whine'].loop = 'loop';
 		audioFile['Voltage'].loop = 'loop';
-		audioFile['Whine'].play();
+		// Browsers (Chrome's autoplay policy) reject .play() until user gesture.
+		// Swallow the rejection; music starts on first click anyway.
+		var p = audioFile['Whine'].play();
+		if(p && p.catch) p.catch(function(){});
 	}
 
 	naudio = 0;
@@ -316,6 +341,7 @@ file = file_get_contents('game/default.bds');
 				this.ySpeed = -1 * this.speedMul * rampMul();
 				this.xSpeed = ((this.x-(paddle.x+parseInt(paddle.width/2)))/30) * this.speedMul * rampMul();
 				this.y=445;
+				logSpeed('paddle-bounce', this);
 			}
 			if(this.magnet){
 				this.ySpeed = -1 * this.speedMul * rampMul();
@@ -795,6 +821,9 @@ file = file_get_contents('game/default.bds');
 	}
 
 	function createlevel(n){
+		user.level = n;
+		user.levelStartTime = (new Date()).getTime();
+		logSpeed('createlevel');
 		setPaddle();
 		cl=false;
 		shadow.aframe = 20;
@@ -821,6 +850,7 @@ file = file_get_contents('game/default.bds');
 		balls[0].is = true;
 		balls[0].magnet = 40;
 		balls[0].speedMul = 1;
+		user.timerStarted = false;
 		paddle.size = 1;
 		bonus.type = -1;
 	}
@@ -843,6 +873,7 @@ file = file_get_contents('game/default.bds');
 		if(user.lives==0){
 			user.timeGame = (new Date()).getTime() - user.startTime;
 		}
+		logSpeed('death lives='+user.lives);
 	}
 
 	mouse = new Object;
@@ -906,6 +937,7 @@ file = file_get_contents('game/default.bds');
 						balls[i].xSpeed = ((balls[i].x-(paddle.x+parseInt(paddle.width/2)))/30) * balls[i].speedMul * rampMul();
 					}
 				}
+				if(hadMagnet) logSpeed('launch');
 				if(bonus.shooting){
 					playAudio('Gunfire');
 					i=bullets.length;
