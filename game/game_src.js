@@ -188,19 +188,21 @@ game = function(){
 	user = new Object();
 	user.name   = '';
 	user.startTime = 0;
+	user.timerStarted = false;
 	paused = paus = false;
 
 	// Time-based difficulty ramp on ball speed, multiplied with speedMul at
 	// each paddle bounce. user.startTime is set in startGame() and adjusted
 	// in the P-pause handler, so elapsed time excludes paused periods.
 	function rampMul(){
-		if(!user.startTime) return 1;
+		if(!user.timerStarted) return 1;
 		var s = ((new Date()).getTime() - user.startTime) / 1000;
-		if(s < 20) return 0.7;
-		if(s < 40) return 1.0;
-		if(s < 60) return 1.3;
-		if(s < 90) return 1.5;
-		return 1.7;
+		if(s < 10) return 0.7;
+		if(s < 20) return 0.9;
+		if(s < 40) return 1.2;
+		if(s < 70) return 1.5;
+		if(s < 120) return 1.7;
+		return 1.9;
 	}
 
 	if(window.soundon){
@@ -785,7 +787,8 @@ file = file_get_contents('game/default.bds');
 		user.lives=3;
 		user.timeGame = 0;
 		createlevel(user.level);
-		user.startTime = (new Date()).getTime();
+		user.startTime = 0;
+		user.timerStarted = false;
 		setTimeout(function(){
 			getDelta();
 		},3000);
@@ -887,7 +890,22 @@ file = file_get_contents('game/default.bds');
 			createlevel(user.level);
 			startGame();
 		}else if(!shadow.drawing&&!highscore.drawing&&!saver.drawing&&!paused){
-				for(i=0;i<balls.length;i++){balls[i].magnet=false;}
+				var hadMagnet = false;
+				for(i=0;i<balls.length;i++){
+					if(balls[i].magnet) hadMagnet = true;
+					balls[i].magnet=false;
+				}
+				// First magnet release of the game starts the difficulty-ramp clock,
+				// so AFK on the menu / blur during the magnet phase no longer pushes
+				// the ball toward late-game tiers before the player has even launched.
+				if(hadMagnet && !user.timerStarted){
+					user.startTime = (new Date()).getTime();
+					user.timerStarted = true;
+					for(i=0;i<balls.length;i++){
+						balls[i].ySpeed = -1 * balls[i].speedMul * rampMul();
+						balls[i].xSpeed = ((balls[i].x-(paddle.x+parseInt(paddle.width/2)))/30) * balls[i].speedMul * rampMul();
+					}
+				}
 				if(bonus.shooting){
 					playAudio('Gunfire');
 					i=bullets.length;
@@ -936,7 +954,9 @@ file = file_get_contents('game/default.bds');
 				if(!paus){
 					pauseTime = (new Date()).getTime();
 				}else{
-					user.startTime+=((new Date()).getTime() - pauseTime);
+					if(user.timerStarted){
+						user.startTime+=((new Date()).getTime() - pauseTime);
+					}
 				}
 				paus = !paus;
 			}
