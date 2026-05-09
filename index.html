@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DX-BALL ONLINE</title>
+<link rel="shortcut icon" href="favicon.ico">
+<link rel="icon" sizes="192x192" href="icon.png">
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    background: #000;
+    overflow: hidden;
+  }
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  canvas#dx-ball {
+    display: block;
+    background: #000;
+    cursor: none;
+    /* Preserve the game's native 4:3 aspect ratio while filling the viewport. */
+    aspect-ratio: 4 / 3;
+    width: min(100vw, calc(100vh * 4 / 3));
+    height: min(100vh, calc(100vw * 3 / 4));
+    image-rendering: pixelated;
+  }
+  /* main.js toggles #comments display on fullscreen resize; keep the node alive but invisible. */
+  #comments { display: none; }
+</style>
+<script type="text/javascript" charset="ISO-8859-1" src="game/game_src.js"></script>
+<script type="text/javascript" src="main.js"></script>
+</head>
+<body>
+  <canvas id="dx-ball"></canvas>
+  <div id="comments"></div>
+</body>
+</html>

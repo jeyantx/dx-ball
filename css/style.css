@@ -1,0 +1,109 @@
+@import url(reset.css);
+body{
+	background: url('../img/page_top.png') repeat-x,
+				url('../img/page_bg.png') #eee;
+	font: 12px/1.4 Tahoma, Geneva, sans-serif;
+	color: #555;
+	overflow:hidden;
+	overflow-y: auto;
+}
+::selection {
+	background: #610087;
+	color: #fff;
+}
+::-moz-selection {
+	background: #610087;
+	color: #fff;
+}
+p{
+	margin-bottom: .8em;
+}
+a{
+	color: #2187b4;
+	text-decoration: none;
+	border-bottom: 1px dotted #2187b4;
+}
+a:hover{
+	color: #C33;
+	border-bottom-color: #C33;
+}
+.page{
+	text-align: center;
+	width: 640px;
+	margin: 0 auto;
+}
+.logo{
+	border: none;
+	display: block;
+	margin: 20px;
+}
+canvas#dx-ball{
+	position: relative;
+	display: block;
+	width: 640px;
+	height: 480px;
+	background: #000;
+	border: 3px solid #000;
+	cursor: none;
+	left: 0;
+	top: 0;
+	z-index: 2;
+}
+.shadow{
+	position: relative;
+	margin-top: -60px;
+	margin-left: -126px;
+	background: url(../img/shadow.png);
+	width: 892px;
+	height: 146px;
+	z-index: 0;
+}
+.details{
+	position: relative;
+	margin-top: -2em;
+	text-align: justify;
+	margin-bottom: 1em;
+}
+.likes{
+	position: absolute;
+	margin-top: -280px;
+	margin-left: 660px;
+}
+.likes li{
+	list-style:none;
+	text-align: left;
+	display:block;
+	margin-bottom:5px;
+}
+footer{
+	margin:25px;
+}
+.advertising{
+	position:relative;
+	width:inherit;
+	background:#FC6;
+	background: rgba(255,204,51,.3);
+	padding: 10px 0 24px 0;
+	box-sizing: border-box;
+	transition: background.1s linear;
+}
+.advertising:hover{
+	background: rgba(255,188,70,.5);
+}
+.advertising h3{
+	margin-left: 15px;
+	margin-bottom: 15px;
+	text-align: left;
+}
+.advertising ul{
+	vertical-align:top;
+	text-align:left;
+	width: 50%;
+	display:inline-block;
+}
+.advertising ul li{
+	display:block;
+	padding: 3px;
+	text-align:left;
+	list-style: none;
+}
