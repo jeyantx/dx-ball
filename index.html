@@ -32,12 +32,40 @@
   }
   /* main.js toggles #comments display on fullscreen resize; keep the node alive but invisible. */
   #comments { display: none; }
+
+  #fs-btn {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    font: 20px/1 -apple-system, sans-serif;
+    cursor: pointer;
+    z-index: 10;
+  }
+  #fs-btn:hover { background: rgba(255, 255, 255, 0.28); }
 </style>
 <script type="text/javascript" charset="ISO-8859-1" src="game/game_src.js"></script>
 <script type="text/javascript" src="main.js"></script>
 </head>
 <body>
   <canvas id="dx-ball"></canvas>
+  <button id="fs-btn" type="button" title="Fullscreen (F)" aria-label="Toggle fullscreen">&#x26F6;</button>
   <div id="comments"></div>
+  <script>
+    document.getElementById('fs-btn').addEventListener('click', function(){
+      var el = document.getElementById('dx-ball');
+      if (document.fullscreenElement || document.webkitFullscreenElement) {
+        (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+      } else {
+        (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+      }
+    });
+  </script>
 </body>
 </html>

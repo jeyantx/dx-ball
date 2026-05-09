@@ -190,6 +190,19 @@ game = function(){
 	user.startTime = 0;
 	paused = paus = false;
 
+	// Time-based difficulty ramp on ball speed, multiplied with speedMul at
+	// each paddle bounce. user.startTime is set in startGame() and adjusted
+	// in the P-pause handler, so elapsed time excludes paused periods.
+	function rampMul(){
+		if(!user.startTime) return 1;
+		var s = ((new Date()).getTime() - user.startTime) / 1000;
+		if(s < 20) return 0.7;
+		if(s < 40) return 1.0;
+		if(s < 60) return 1.3;
+		if(s < 90) return 1.5;
+		return 1.7;
+	}
+
 	if(window.soundon){
 		audioFile['Whine'].loop = 'loop';
 		audioFile['Voltage'].loop = 'loop';
@@ -298,13 +311,13 @@ file = file_get_contents('/game/default.bds');
 					this.magnet=this.x-paddle.x;
 					playAudio('Humm');
 				}else playAudio('Boing');
-				this.ySpeed*=-1;
-				this.xSpeed=((this.x-(paddle.x+parseInt(paddle.width/2)))/30)*this.speedMul;
+				this.ySpeed = -1 * this.speedMul * rampMul();
+				this.xSpeed = ((this.x-(paddle.x+parseInt(paddle.width/2)))/30) * this.speedMul * rampMul();
 				this.y=445;
 			}
 			if(this.magnet){
-				this.ySpeed = -1 * this.speedMul;
-				this.xSpeed=((this.x-(paddle.x+parseInt(paddle.width/2)))/30)*this.speedMul;
+				this.ySpeed = -1 * this.speedMul * rampMul();
+				this.xSpeed = ((this.x-(paddle.x+parseInt(paddle.width/2)))/30) * this.speedMul * rampMul();
 				this.x = paddle.x+this.magnet;
 				this.y = 445;
 			}
@@ -644,11 +657,18 @@ file = file_get_contents('/game/default.bds');
 				myFonts.strokeText('Enter your name:', 'Sysfont.sbk', 70,220);
 				myFonts.strokeText(user.name+chcur, 'Sysfont.sbk', 70,250);
 			}else if(this.drawing == 2){
+				var anyShown = false;
 				for(j=0;j<15;j++){
+					if(!records[scrollPos+j]) continue;
+					anyShown = true;
 					myFonts.strokeText(records[scrollPos+j].name, 'Sysfont.sbk', 10 ,160+(j*20));
 					myFonts.strokeText(records[scrollPos+j].score, 'Sysfont.sbk', 570,160+(j*20));
 					myFonts.strokeText(scrollPos+j, 'Sysfont.sbk', 500,160+(j*20));
 					if(scrollPos+j==this.selection){ctx.strokeStyle = "rgba(255,0,255,"+(0.7+Math.sin(this.aframe/8)/4)+")";ctx.strokeRect(5,158+(j*20),630,20);this.aframe++}
+				}
+				if(!anyShown){
+					myFonts.strokeText('NO RECORDS - OFFLINE BUILD', 'Sysfont.sbk', 130, 240);
+					myFonts.strokeText('PRESS ESC OR CLICK TO RETURN', 'Sysfont.sbk', 110, 270);
 				}
 			}
 		}
@@ -933,6 +953,16 @@ file = file_get_contents('/game/default.bds');
 					music.play();
 				}
 			}
+			// F = toggle browser fullscreen on the canvas. Esc to exit.
+			if(event.keyCode==70){
+				if(document.fullscreenElement || document.webkitFullscreenElement){
+					(document.exitFullscreen||document.webkitExitFullscreen).call(document);
+				}else{
+					var c = document.getElementById('dx-ball');
+					(c.requestFullscreen||c.webkitRequestFullscreen).call(c);
+				}
+				event.preventDefault();
+			}
 
 			if(highscore.selection<scrollPos)scrollPos=highscore.selection;
 			if(highscore.selection>=scrollPos+15)scrollPos=highscore.selection-14;
@@ -981,6 +1011,7 @@ file = file_get_contents('/game/default.bds');
 		highscore.loading=false;
 		if(highscore.upLim==-1)highscore.upLim=0;
 		if(highscore.downLim==-1)highscore.downLim=0;
+		if(typeof highscore.selection != 'number') highscore.selection=0;
 		return;
 		if(type=='f')url = 'http://dx-ball.ru/record.php?sign='+calcMD5(user.name+user.score+user.timeGame+'17')+'&name='+user.name+'&score='+user.score+'&tg='+user.timeGame;
 		else url = 'http://dx-ball.ru/record.php?firstID='+type;
