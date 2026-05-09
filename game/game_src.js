@@ -1,9 +1,9 @@
-var mbbkgrnd_img = new Image();mbbkgrnd_img.src = '/game/images/mbbkgrnd.png';
-var sphere_img   = new Image();sphere_img.src   = '/game/images/sphere.png';
-var Highscor_img = new Image();Highscor_img.src = '/game/images/Highscor.png';
-var Mainmenu_img = new Image();Mainmenu_img.src = '/game/images/Mainmenu.png';
-var Intro_img    = new Image();Intro_img.src    = '/game/images/Intro.png';
-var bigbolt_img  = new Image();bigbolt_img.src  = '/game/images/bigbolt.png';
+var mbbkgrnd_img = new Image();mbbkgrnd_img.src = 'game/images/mbbkgrnd.png';
+var sphere_img   = new Image();sphere_img.src   = 'game/images/sphere.png';
+var Highscor_img = new Image();Highscor_img.src = 'game/images/Highscor.png';
+var Mainmenu_img = new Image();Mainmenu_img.src = 'game/images/Mainmenu.png';
+var Intro_img    = new Image();Intro_img.src    = 'game/images/Intro.png';
+var bigbolt_img  = new Image();bigbolt_img.src  = 'game/images/bigbolt.png';
 
 audioName = [
 "Ethno_pa.mp3",
@@ -45,14 +45,14 @@ audioFile = [];
 for(i=0;i<audioName.length;i++){
 	audioFile[audioName[i]] = document.createElement('audio');
 	if(audioName[i][audioName[i].length-1]=='3'){
-		source = document.createElement('source');source.setAttribute('src', '/game/audio/sound/'+audioName[i]);
+		source = document.createElement('source');source.setAttribute('src', 'game/audio/sound/'+audioName[i]);
 		audioFile[audioName[i]].appendChild(source);
 	}else{
-		source = document.createElement('source');source.setAttribute('src', '/game/audio/sfx/wav/'+audioName[i]+'.wav');
+		source = document.createElement('source');source.setAttribute('src', 'game/audio/sfx/wav/'+audioName[i]+'.wav');
 		audioFile[audioName[i]].appendChild(source);
-		source = document.createElement('source');source.setAttribute('src', '/game/audio/sfx/mp3/'+audioName[i]+'.mp3');
+		source = document.createElement('source');source.setAttribute('src', 'game/audio/sfx/mp3/'+audioName[i]+'.mp3');
 		audioFile[audioName[i]].appendChild(source);
-		source = document.createElement('source');source.setAttribute('src', '/game/audio/sfx/aac/'+audioName[i]+'.aac');
+		source = document.createElement('source');source.setAttribute('src', 'game/audio/sfx/aac/'+audioName[i]+'.aac');
 		audioFile[audioName[i]].appendChild(source);
 	}
 	audioFile[audioName[i]].load();
@@ -85,7 +85,7 @@ function dx_ball(soundon, saveron){
 
 	function loadfile(){
 		var xhr = new XMLHttpRequest();
-		xhr.open('GET', '/game/'+FontList[lFile][0], true);
+		xhr.open('GET', 'game/'+FontList[lFile][0], true);
 		xhr.responseType = 'arraybuffer';
 		xhr.onload = function(e) {
 		 file = new Uint8Array(this.response);
@@ -231,7 +231,7 @@ function file_get_contents( url ) {
 	req.send(null);
 	return req.responseText;
 }
-file = file_get_contents('/game/default.bds');
+file = file_get_contents('game/default.bds');
 
 	function playAudio(name){
 		if(soundon){
