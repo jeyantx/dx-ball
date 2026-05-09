@@ -272,8 +272,8 @@ file = file_get_contents('game/default.bds');
 		this.move = function(){
 			cof = Math.sqrt(Math.pow(this.xSpeed, 2)+Math.pow(this.xSpeed, 2));
 			//if(cof<1)cof=1
-			this.x+=this.xSpeed*6*delta;
-			this.y+=this.ySpeed*6*delta;
+			this.x+=this.xSpeed*4*delta;
+			this.y+=this.ySpeed*4*delta;
 
 			if(this.y>476){
 				this.is = false;
@@ -734,7 +734,7 @@ file = file_get_contents('game/default.bds');
 						this.sy = 422+parseInt(Math.sin((this.sx-this.ss)/55)*19);
 					}
 				}
-				this.ss+=6*delta;
+				this.ss+=3*delta;
 			}else if(this.drawing == 2){
 				ctx.drawImage(Mainmenu_img,0,0,640,480);
 				ctx.fillStyle = "#cb00cb";
@@ -754,9 +754,9 @@ file = file_get_contents('game/default.bds');
 				myFonts.strokeText("Copyright  1996-98  by Michael P. Welch,  All Rights Reserved.", 'Sfont.sbk', 3,459);
 				myFonts.strokeText("You may freely distribute this game so long as it's not sold for profit without the author's written consent.", 'Sfont.sbk', 3,469);
 
-				this.ss+=.1*delta;
+				this.ss+=.05*delta;
 				ctx.drawImage(sphere_img, 135*parseInt(this.aframe), 0, 135, 135, 499 ,319 , 135, 135);
-				this.aframe+=delta;if(this.aframe>=14)this.aframe=0;
+				this.aframe+=delta*0.5;if(this.aframe>=14)this.aframe=0;
 			}
 		}
 	}
