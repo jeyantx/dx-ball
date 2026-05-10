@@ -221,10 +221,10 @@ game = function(){
 		var s = ((new Date()).getTime() - user.startTime) / 1000;
 		if(s < 10) return 1.1;
 		if(s < 20) return 1.2;
-		if(s < 40) return 1.4;
-		if(s < 70) return 1.5;
-		if(s < 120) return 1.7;
-		return 1.9;
+		if(s < 40) return 1.3;
+		if(s < 70) return 1.35;
+		if(s < 120) return 1.5;
+		return 1.6;
 	}
 
 	if(window.soundon){
@@ -950,7 +950,14 @@ file = file_get_contents('game/default.bds');
 			saver.drawing=2
 			audioFile['Whine'].pause();
 			music_N=0;
-			if(window.soundon)music.play();
+			if(window.soundon){
+				// Re-clone inside this click handler so the audio element is
+				// born within a user gesture - fixes silent autoplay rejection
+				// of the module-load clone on Safari and some Chrome builds.
+				music = audioFile[audioName[music_N]].cloneNode(true);
+				var p = music.play();
+				if(p && p.catch) p.catch(function(){});
+			}
 			//saver.drawing = 0;
 			//shadow.aframe = 20;
 			//shadow.drawing = true;
