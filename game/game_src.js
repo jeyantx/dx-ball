@@ -815,6 +815,9 @@ file = file_get_contents('game/default.bds');
 		createlevel(user.level);
 		user.startTime = 0;
 		user.timerStarted = false;
+		// Stop the menu/intro music when actual gameplay begins.
+		// SFX (audio[]) still play. Press S in-game to toggle music back on.
+		music.pause();
 		setTimeout(function(){
 			getDelta();
 		},3000);
@@ -878,10 +881,45 @@ file = file_get_contents('game/default.bds');
 
 	mouse = new Object;
 	mouse.x = mouse.y = 320;
+	function isPointerLocked(){
+		return !!(document.pointerLockElement || document.webkitPointerLockElement);
+	}
 	document.addEventListener('mousemove', function(e){
 		if (!e){e=window.event};
-		mouse.x = e.pageX;
-		mouse.y = e.pageY;
+		if(isPointerLocked()){
+			// Pointer Lock mode: events report relative motion. Cursor is hidden
+			// and trapped inside the canvas, so it cannot escape to the macOS
+			// menu bar / dock or any other OS chrome.
+			mouse.x += e.movementX || 0;
+			// Clamp the virtual cursor to the canvas so a hard sweep against a
+			// wall does not leave mouse.x miles outside before recovering.
+			var L = getOffsetSum(canvas).left;
+			var R = L + canvas.offsetWidth;
+			if(mouse.x < L) mouse.x = L;
+			if(mouse.x > R) mouse.x = R;
+		}else{
+			mouse.x = e.pageX;
+			mouse.y = e.pageY;
+		}
+	});
+
+	// Auto-engage pointer lock when the page enters fullscreen, so the cursor
+	// is trapped inside the canvas. Browser releases the lock automatically on
+	// fullscreen exit (Esc).
+	function tryLockPointer(){
+		var c = document.getElementById('dx-ball');
+		var fn = c.requestPointerLock || c.webkitRequestPointerLock;
+		if(!fn) return;
+		try {
+			var p = fn.call(c);
+			if(p && p.catch) p.catch(function(){});
+		} catch(e){}
+	}
+	document.addEventListener('fullscreenchange', function(){
+		if(document.fullscreenElement) tryLockPointer();
+	});
+	document.addEventListener('webkitfullscreenchange', function(){
+		if(document.webkitFullscreenElement) tryLockPointer();
 	});
 	canvas.addEventListener('touchmove', function(e) {
 		mouse.x = e.touches[0].pageX;
