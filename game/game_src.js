@@ -316,10 +316,20 @@ file = file_get_contents('game/default.bds');
 			}
 
 			if(this.y>45&&this.y<350&&this.x>20&&this.x<620){
-				for(y=parseInt((this.y-45)/15)-1;y<parseInt((this.y-45)/15)+1;y++)for(x=parseInt((this.x-20)/30)-1;x<parseInt((this.x-20)/30)+1;x++){
+				// First-hit-and-stop: process at most one brick per frame, so a
+				// diagonal corner clip cannot destroy a "behind" brick by AABB
+				// overlap on the same tick. The next frame's trajectory will pick
+				// up any genuinely-touched second brick.
+				var brickHit = false;
+				for(y=parseInt((this.y-45)/15)-1; y<parseInt((this.y-45)/15)+1 && !brickHit; y++)
+				for(x=parseInt((this.x-20)/30)-1; x<parseInt((this.x-20)/30)+1 && !brickHit; x++){
 					if(bricks[x][y].type!=0&&this.x>bricks[x][y].x-5&&this.x<bricks[x][y].x+35&&this.y>bricks[x][y].y-5&&this.y<bricks[x][y].y+20){
 						if(bonus.fireball){bricks[x][y].type=8;i=bang.length;bang[i] = new Tbang(this.x,this.y)}
 						bricks[x][y].dell(x,y);
+						// Falling-brick gravity now fires on actual destruction, not
+						// on every paddle bounce - prevents the grid from churning
+						// itself into an unwinnable state.
+						if(bricks[x][y].type==0) bonus.falling();
 						if((this.x-(bricks[x][y].x-5)<this.y-(bricks[x][y].y-5)&&this.x-(bricks[x][y].x-5)<(bricks[x][y].y+20)-this.y)||((bricks[x][y].x+35)-this.x<this.y-(bricks[x][y].y-5)&&(bricks[x][y].x+35)-this.x<(bricks[x][y].y+20)-this.y))
 						{
 							if(!bonus.thru||bricks[x][y].type==2||bricks[x][y].type==21)this.xSpeed*=-1;
@@ -328,12 +338,12 @@ file = file_get_contents('game/default.bds');
 							if(!bonus.thru||bricks[x][y].type==2||bricks[x][y].type==21)this.ySpeed*=-1;
 							if(this.y<bricks[x][y].y+7)this.y=bricks[x][y].y-5;else this.y=bricks[x][y].y+20;
 						}
+						brickHit = true;
 					}
 				}
 			}
 
 			if(this.y>=445&&this.x<paddle.x+paddle.width&&this.x>paddle.x){
-				bonus.falling();
 				if(bonus.magnet==true){
 					this.magnet=this.x-paddle.x;
 					playAudio('Humm');
@@ -428,11 +438,15 @@ file = file_get_contents('game/default.bds');
 
 		this.falling=function(){
 			if(this.fall){
-				for(y=19;y>0;y--)for(x=0;x<20;x++)if(bricks[x][y].type==0){
-					bricks[x][y].type = bricks[x][y-1].type;
-					bricks[x][y].aframe = bricks[x][y-1].aframe;
-					bricks[x][y-1].type=0;
-				}
+				for(y=19;y>0;y--)for(x=0;x<20;x++)
+					// Anchor stones (type 2) and special-hard (type 21): they do not fall.
+					// Without this, a stone could drift down a column and trap a regular
+					// brick between two stones, leaving the level unwinnable.
+					if(bricks[x][y].type==0 && bricks[x][y-1].type!=2 && bricks[x][y-1].type!=21){
+						bricks[x][y].type = bricks[x][y-1].type;
+						bricks[x][y].aframe = bricks[x][y-1].aframe;
+						bricks[x][y-1].type=0;
+					}
 				playAudio('Orchblas');
 			}
 		}
